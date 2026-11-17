@@ -189,7 +189,7 @@
 
   function renderCompanies(items, filters, removed) {
     var where = filters.location ? ' and hire in or near ' + filters.location : '';
-    var note = 'Only companies with ' + fmt(filters.maxSize) + ' employees or fewer' + where + ' are shown. Sizes are estimates - check them on LinkedIn before calling.';
+    var note = 'Only companies with ' + fmt(filters.maxSize) + ' employees or fewer' + where + ' are shown. Sizes are Claude\'s estimates, not looked up - check them on LinkedIn before calling.';
     if (removed && removed.companies > 0) note += ' ' + removed.companies + ' suggestion' + (removed.companies === 1 ? ' was' : 's were') + ' removed for being too large or having no size estimate.';
     $('coRule').textContent = note;
     $('count-co').textContent = items.length || '';
@@ -203,7 +203,7 @@
         el('div', { class: 'bar', 'aria-hidden': 'true' }, [bar]),
         el('p', { class: 'meta', text: [co.sector, co.location].filter(Boolean).join(' · ') }),
         el('p', { text: co.whyFit }),
-        el('p', { class: 'meta', text: 'Size: ' + co.sizeBasis }),
+        el('p', { class: 'meta', text: 'Size is Claude\'s estimate: ' + co.sizeBasis }),
       ]));
     });
   }
