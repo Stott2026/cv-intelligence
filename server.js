@@ -128,7 +128,7 @@ api.post('/vacancies', async (req, res, next) => {
       label: 'vacancies',
       system: VACANCY_SYSTEM,
       messages: [{ role: 'user', content: vacancyMessage({ headline, skills, location, maxSize, companies }) }],
-      tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 6 }],
+      tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 10 }],
       effort: 'medium',
     });
 
