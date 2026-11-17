@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 import { extractCvText, CvError } from './lib/extract.js';
 import { ask, parseJson, searchedUrls, searchErrors, ClaudeError, MODEL } from './lib/claude.js';
-import { ANALYSIS_SYSTEM, ANALYSIS_SCHEMA, analysisMessage, VACANCY_SYSTEM, vacancyMessage, EMAIL_SYSTEM, emailMessage } from './lib/prompts.js';
+import { SENIORITY, ANALYSIS_SYSTEM, ANALYSIS_SCHEMA, analysisMessage, VACANCY_SYSTEM, vacancyMessage, EMAIL_SYSTEM, emailMessage } from './lib/prompts.js';
 import {
   sizeLimit, cvNumberSet, onlyCvNumbers, numbersIn, stripUnverifiedSentences,
   checkAchievements, checkSellingPoints, checkCompanies, checkVacancies, houseStyle,
@@ -123,11 +123,12 @@ api.post('/vacancies', async (req, res, next) => {
     if (!headline) return res.status(400).json({ error: 'Analyse a CV first.' });
     const maxSize = sizeLimit(req.body.maxSize);
     const location = String(req.body.location || '').trim().slice(0, 100);
+    const level = SENIORITY.includes(req.body.level) ? req.body.level : '';
 
     const result = await ask({
       label: 'vacancies',
       system: VACANCY_SYSTEM,
-      messages: [{ role: 'user', content: vacancyMessage({ headline, skills, location, maxSize, companies }) }],
+      messages: [{ role: 'user', content: vacancyMessage({ headline, skills, location, maxSize, companies, level }) }],
       tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 10 }],
       effort: 'medium',
     });
