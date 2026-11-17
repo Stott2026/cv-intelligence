@@ -124,6 +124,7 @@ api.post('/vacancies', async (req, res, next) => {
     const maxSize = sizeLimit(req.body.maxSize);
     const location = String(req.body.location || '').trim().slice(0, 100);
     const level = SENIORITY.includes(req.body.level) ? req.body.level : '';
+    const nums = cvNumberSet(String(req.body.cvText || '').slice(0, MAX_CV_CHARS));
 
     const result = await ask({
       label: 'vacancies',
@@ -144,7 +145,7 @@ api.post('/vacancies', async (req, res, next) => {
     } catch {
       found = [];
     }
-    const vacancies = houseStyle(checkVacancies(Array.isArray(found) ? found : [], seen));
+    const vacancies = houseStyle(checkVacancies(Array.isArray(found) ? found : [], seen, nums));
     res.json({
       vacancies,
       checked: { returned: Array.isArray(found) ? found.length : 0, kept: vacancies.length, searchResults: seen.size },

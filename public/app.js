@@ -273,7 +273,7 @@
     box.appendChild(el('div', { class: 'loading', role: 'status' }, [el('span', { class: 'spinner', 'aria-hidden': 'true' }), el('span', { text: 'Searching the web for live vacancies. This can take a minute…' })]));
     try {
       var data = await api('vacancies', { json: {
-        headline: a.candidate.headline, skills: a.candidate.skills, level: a.candidate.seniority,
+        headline: a.candidate.headline, skills: a.candidate.skills, level: a.candidate.seniority, cvText: state.cvText,
         companies: a.targetCompanies.map(function (c) { return c.name; }),
         maxSize: state.filters.maxSize, location: state.filters.location || (a.candidate.location !== 'Not stated' ? a.candidate.location : ''),
       } });

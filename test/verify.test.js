@@ -52,3 +52,12 @@ test('sentences with invented numbers are removed', () => {
 test('em and en dashes become spaced hyphens, URLs untouched', () => {
   assert.deepEqual(houseStyle({ a: 'Fast—reliable – good', url: 'https://x.com/a—b' }), { a: 'Fast - reliable - good', url: 'https://x.com/a—b' });
 });
+
+test('vacancy descriptions lose sentences quoting numbers not in the CV', () => {
+  const seen = new Set(['https://jobs.example.com/1']);
+  const [v] = checkVacancies([{ title: 'A', url: 'https://jobs.example.com/1',
+    whySuitable: 'Uses the same stack. It asks for 2 years of experience. The team is 6 engineers.' }], seen, nums);
+  assert.equal(v.whySuitable, 'Uses the same stack. The team is 6 engineers.');
+  const [w] = checkVacancies([{ title: 'B', url: 'https://jobs.example.com/1', whySuitable: 'Needs 5 years.' }], seen);
+  assert.equal(w.whySuitable, '', 'with no CV text, any number is removed');
+});
