@@ -6,6 +6,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var state = { code: '', analysis: null, cvText: '', filters: null, costs: {} };
+  var session = { signedIn: false, backup: false, signIn: null };
 
   // ---------- small helpers ----------
   function el(tag, attrs, children) {
@@ -43,7 +44,11 @@
     }
     var data = {};
     try { data = await res.json(); } catch (e) {}
-    if (res.status === 401) { signOut('Your access code was not accepted. Enter it again.'); throw new Error('Access code not accepted.'); }
+    if (res.status === 401) {
+      // Signed out (or the sign-in ran out): sign in again through the House, or the backup access code.
+      if (data.signIn && !session.backup) { window.location.assign(data.signIn); throw new Error('Signing you in again...'); }
+      signOut('Your access code was not accepted. Enter it again.'); throw new Error('Access code not accepted.');
+    }
     if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
     return data;
   }
@@ -90,7 +95,17 @@
       showError($('gateError'), err.message === 'Access code not accepted.' ? 'That code is not right. Check it and try again.' : err.message);
     }
   });
-  $('signOutBtn').addEventListener('click', function () { signOut(''); });
+  $('signOutBtn').addEventListener('click', function () {
+    // Signed in through the House: sign out here and go back to the House's hallway.
+    if (session.signedIn) {
+      fetch('/signout', { method: 'POST' }).catch(function () {}).then(function () {
+        var house = $('houseLink').getAttribute('href');
+        if (house && house !== '#') window.location.assign(house); else window.location.reload();
+      });
+      return;
+    }
+    signOut('');
+  });
 
   // ---------- file picker ----------
   var drop = $('drop'), fileInput = $('cvFile');
@@ -365,6 +380,12 @@
   }
 
   // ---------- start ----------
-  var saved = load('cvi-code');
-  if (saved) { state.code = saved; showApp(); } else showGate();
+  // Signed in through the House? Then straight in. Otherwise the House signs you in (the server
+  // normally sends you there before the page loads), or, if the backup is on, the access code.
+  fetch('/session', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (s) {
+    session = s;
+    if (s.signedIn) return showApp();
+    if (s.backup) { var saved = load('cvi-code'); if (saved) { state.code = saved; showApp(); } else showGate(); return; }
+    if (s.signIn) window.location.assign(s.signIn); else showGate('Sign-in is not set up yet.');
+  }).catch(function () { showGate('Could not reach the server. Check your connection and try again.'); });
 })();

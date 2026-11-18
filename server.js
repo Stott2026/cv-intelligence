@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { extractCvText, CvError } from './lib/extract.js';
+import { acceptPass, currentUser, signOut, houseSignInUrl, houseReady, backupOn } from './lib/house.js';
 import { ask, parseJson, searchedUrls, searchErrors, ClaudeError, MODEL } from './lib/claude.js';
 import { SENIORITY, ANALYSIS_SYSTEM, ANALYSIS_SCHEMA, analysisMessage, VACANCY_SYSTEM, vacancyMessage, EMAIL_SYSTEM, emailMessage } from './lib/prompts.js';
 import {
@@ -46,6 +47,28 @@ app.get('/house-link', (req, res) => {
   res.json({ url: /^https?:\/\//.test(base) ? `${base}/?hallway` : null });
 });
 
+// ---- Signing in through the House (lib/house.js) ----
+// A House pass in the address signs you in, then the address is tidied.
+app.use(acceptPass);
+
+// What the page needs to know at start: signed in or not, and where to sign in.
+app.get('/session', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const user = currentUser(req);
+  res.json({ signedIn: Boolean(user), name: user?.name || '', signIn: houseSignInUrl(req, '/'), backup: backupOn });
+});
+
+app.post('/signout', (req, res) => {
+  signOut(req, res);
+  res.json({ ok: true });
+});
+
+// The page itself: if you're not signed in, go through the House (unless the backup access code is on).
+app.get(['/', '/index.html'], (req, res, next) => {
+  if (currentUser(req) || backupOn || !houseReady) return next();
+  res.redirect(houseSignInUrl(req));
+});
+
 app.use(express.static(path.join(here, 'public'), { extensions: ['html'] }));
 
 // ---- Everything under /api needs the access code ----
@@ -60,12 +83,13 @@ function sameCode(given, expected) {
   return crypto.timingSafeEqual(a, b);
 }
 
+// Signed in through the House, or (only when the backup is switched on) the old shared access code.
 api.use((req, res, next) => {
-  const expected = process.env.ACCESS_CODE;
-  if (!expected) return res.status(503).json({ error: 'The app is not set up yet: ACCESS_CODE is missing on the server.' });
+  if (currentUser(req)) return next();
   const given = req.get('x-access-code') || '';
-  if (!given || !sameCode(given, expected)) return res.status(401).json({ error: 'Access code missing or incorrect.' });
-  next();
+  if (backupOn && given && sameCode(given, process.env.ACCESS_CODE)) return next();
+  if (!houseReady && !backupOn) return res.status(503).json({ error: 'Sign-in is not set up yet: HOUSE_URL is missing on the server.' });
+  res.status(401).json({ error: 'Please sign in again.', signIn: houseSignInUrl(req, '/') });
 });
 
 const upload = multer({
