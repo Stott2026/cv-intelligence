@@ -176,3 +176,15 @@ ul.clean { list-style: none; margin: 0; padding: 0; display: flex; flex-directio
   .ghost { padding: 6px 10px; font-size: 12px; }
   .house-link span { display: none; }
 }
+
+/* Format CV tab */
+.tpl-pick { border: 0; padding: 0; margin: 0 0 6px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.tpl-pick legend { font-weight: 600; font-size: 14px; margin-bottom: 8px; padding: 0; }
+.tpl { display: flex; gap: 10px; align-items: flex-start; border: 1.5px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; background: var(--surface); margin: 0; }
+.tpl:has(input:checked) { border-color: var(--teal); background: var(--surface-2); }
+.tpl input { margin-top: 3px; accent-color: var(--teal); }
+.tpl strong { display: block; font: 700 14px var(--head); }
+.tpl small { display: block; font: 400 12.5px/1.45 var(--data); color: var(--muted); margin-top: 2px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
+#formatForm textarea { margin-bottom: 12px; }
+#formatForm .subhead { margin: 18px 0 10px; }

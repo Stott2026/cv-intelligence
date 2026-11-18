@@ -135,6 +135,7 @@
             <button role="tab" type="button" id="tab-pitch" aria-controls="panel-pitch" aria-selected="false" tabindex="-1">Pitch guide</button>
             <button role="tab" type="button" id="tab-match" aria-controls="panel-match" aria-selected="false" tabindex="-1" hidden>Job match</button>
             <button role="tab" type="button" id="tab-email" aria-controls="panel-email" aria-selected="false" tabindex="-1">Intro email</button>
+            <button role="tab" type="button" id="tab-format" aria-controls="panel-format" aria-selected="false" tabindex="-1">Format CV</button>
           </div>
 
           <div class="tab-body">
@@ -182,6 +183,58 @@
                   <span class="toast" id="copied" role="status" aria-live="polite"></span>
                 </div>
               </div>
+            </div>
+
+            <div role="tabpanel" id="panel-format" aria-labelledby="tab-format" tabindex="0" hidden>
+              <p class="rule">Turns this CV into a Stott and May branded document. The candidate's own email, phone numbers, home address and LinkedIn are removed from the CV automatically. Check the details below, then download.</p>
+              <form id="formatForm" novalidate>
+                <fieldset class="tpl-pick">
+                  <legend>Template</legend>
+                  <label class="tpl"><input type="radio" name="tpl" value="basic"><span><strong>Basic</strong><small>The CV only, with the Stott and May header and footer.</small></span></label>
+                  <label class="tpl"><input type="radio" name="tpl" value="medium" checked><span><strong>Medium</strong><small>A Candidate Profile page, then the CV.</small></span></label>
+                  <label class="tpl"><input type="radio" name="tpl" value="long"><span><strong>Full pack</strong><small>Cover page, profile, CV and a "Get in touch" page.</small></span></label>
+                </fieldset>
+
+                <div id="profileFields">
+                  <h3 class="subhead">Candidate Profile page</h3>
+                  <div class="form-grid">
+                    <div><label for="fmName">Candidate name</label><input id="fmName" type="text" autocomplete="off"></div>
+                    <div><label for="fmLocation">Location</label><input id="fmLocation" type="text" autocomplete="off"></div>
+                    <div><label for="fmVacancyTitle">Vacancy job title</label><input id="fmVacancyTitle" type="text" autocomplete="off"></div>
+                    <div><label for="fmAvailability">Availability / notice</label><input id="fmAvailability" type="text" autocomplete="off"></div>
+                    <div><label for="fmSalary">Salary expectations</label><input id="fmSalary" type="text" autocomplete="off"></div>
+                    <div><label for="fmNationality">Nationality</label><input id="fmNationality" type="text" autocomplete="off"></div>
+                  </div>
+                  <label for="fmSummary">Candidate summary</label>
+                  <textarea id="fmSummary" rows="4"></textarea>
+                  <label for="fmAchievements">Key achievements (one per line, up to five)</label>
+                  <textarea id="fmAchievements" rows="5"></textarea>
+                  <p class="hint">Filled in from the analysis. Achievements come only from those marked "From CV". Edit anything before downloading.</p>
+                </div>
+
+                <div id="packFields" hidden>
+                  <h3 class="subhead">Cover page</h3>
+                  <div class="form-grid">
+                    <div><label for="fmCompany">Client company</label><input id="fmCompany" type="text" list="companyList" autocomplete="off"></div>
+                    <div><label for="fmVacancyName">Vacancy name</label><input id="fmVacancyName" type="text" autocomplete="off"></div>
+                  </div>
+                  <h3 class="subhead">"Get in touch" page (your details)</h3>
+                  <div class="form-grid">
+                    <div><label for="fmConsultantName">Your name</label><input id="fmConsultantName" type="text" autocomplete="name"></div>
+                    <div><label for="fmConsultantTitle">Your job title</label><input id="fmConsultantTitle" type="text" autocomplete="organization-title"></div>
+                    <div><label for="fmEmail">Your email</label><input id="fmEmail" type="text" autocomplete="email"></div>
+                    <div><label for="fmPhone">Your phone</label><input id="fmPhone" type="text" autocomplete="tel"></div>
+                    <div><label for="fmLinkedin">Your LinkedIn</label><input id="fmLinkedin" type="text" autocomplete="off"></div>
+                  </div>
+                </div>
+
+                <div class="row-start">
+                  <button class="btn" type="button" id="pdfBtn">Download PDF</button>
+                  <button class="btn" type="button" id="docxBtn">Download Word</button>
+                  <span class="toast" id="formatStatus" role="status" aria-live="polite"></span>
+                </div>
+              </form>
+              <p class="error" id="formatError" role="alert" hidden></p>
             </div>
           </div>
 
