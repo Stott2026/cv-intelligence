@@ -1,6 +1,6 @@
 # CV Intelligence
 
-A Stott and May tool. A consultant uploads a PDF or Word CV and gets target companies, live vacancies, selling points, quantified achievements, a pitch guide, an optional job match against a pasted job spec, and an intro email to a hiring manager. Filters: company size (up to 50, 200, 500 or 1,000 employees) and location.
+A Stott and May tool. A consultant uploads a PDF or Word CV and gets target companies, live vacancies, selling points, quantified achievements, a pitch guide, an optional job match against a pasted job spec, and an intro email to a hiring manager, and can download the CV formatted as a Stott and May PDF or Word document. Filters: company size (up to 50, 200, 500 or 1,000 employees) and location.
 
 ## Working with Ian
 
@@ -16,8 +16,9 @@ Ian owns this project. He is not a developer. Explain plans in plain English bef
 - `public/`: plain HTML, CSS and JavaScript. Model output is only ever inserted with `textContent`.
 
 - `lib/house.js`: signing in through the House (see Sign-in below).
+- `lib/format.js`: formats the CV as a Stott and May PDF (pdfkit) or Word file (docx), in memory only. Three templates, ported from Ian's CV Formatter Artifact (https://claude.ai/artifact/355hBR7g7Lg24CQYYcMvop, kept as a standalone tool): `basic` (CV only), `medium` (Candidate Profile page, then the CV), `long` (cover, profile, CV, "Get in touch" page with the consultant's details). The candidate's own email, phone, home address and LinkedIn are always removed from the CV body. Fonts (Manrope, Inter, SIL Open Font Licence) are in `lib/fonts/`. Tests in `test/format.test.js`.
 
-Routes: `GET /healthz` (no auth, returns `ok`), `POST /api/check`, `POST /api/analyse` (multipart: `cv`, `jobSpec`, `maxSize`, `location`), `POST /api/vacancies`, `POST /api/email`. Every `/api` route needs a signed-in person (see Sign-in). `GET /session` (no auth) tells the page whether you're signed in and where to sign in; `POST /signout` signs you out of this tool. `GET /house-link` (no auth) returns the House's hallway address for the "The House" button in the top bar (November 2026).
+Routes: `GET /healthz` (no auth, returns `ok`), `POST /api/check`, `POST /api/analyse` (multipart: `cv`, `jobSpec`, `maxSize`, `location`), `POST /api/vacancies`, `POST /api/email`, `POST /api/format` (JSON: `template`, `format` pdf or docx, `cvText`, `fields`; returns the file). Every `/api` route needs a signed-in person (see Sign-in). `GET /session` (no auth) tells the page whether you're signed in and where to sign in; `POST /signout` signs you out of this tool. `GET /house-link` (no auth) returns the House's hallway address for the "The House" button in the top bar (November 2026).
 
 ## Sign-in (through the House, November 2026)
 
@@ -33,6 +34,7 @@ Settings: `ANTHROPIC_API_KEY`, `HOUSE_URL` (needed for sign-in), optional `SESSI
   - Companies above the chosen size limit, or without a size estimate, are removed. The limit can never exceed 1,000.
   - A vacancy is only shown if its URL appeared in the web search results of that same call.
 - The Job match tab only appears when a job spec is pasted.
+- Format CV: the profile page is pre-filled only from checked analysis output (summary, achievements marked "From CV"); salary, notice and so on are typed by the consultant. Never put the candidate's own contact details in a formatted CV.
 - CVs are not stored. Do not add a database or logging of CV content.
 
 ## Brand
