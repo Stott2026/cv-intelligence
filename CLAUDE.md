@@ -41,6 +41,8 @@ Progress (17 November 2026): steps 1 to 3 below are done with a real CV (junior 
 
 Railway (17 November 2026): project "CV Intelligence", service `cv-intelligence`, deploys from branch `claude/quirky-einstein-vw5kil` on every push, start command `npm start`, healthcheck `/healthz`, region Amsterdam (`ams`, moved from US West at Ian's request so CVs stay on a European server). Domain: https://cv-intelligence-production-afb09260.up.railway.app. First deploy succeeded. `ANTHROPIC_API_KEY` and `ACCESS_CODE` are set by Ian in the Railway dashboard (not through Claude, so the key never appears in a chat). The cloud session's network cannot reach railway.app, so live checks are done by Ian in a browser or through Railway's logs.
 
+Live (18 November 2026): working on Railway. Node is pinned to 22.x in package.json because unpdf needs Node 22 (on Node 20 every PDF failed to open). Real costs from the live logs, 4 runs: analysis $0.09 to $0.13, vacancy search $0.20 to $0.38 (10 searches each, 44 to 136 seconds), email about $0.014 (measured locally; not yet used live). One full run is about $0.30 to $0.53, typically around $0.42. All five steps below are done.
+
 Still to do, in order:
 1. Run locally with Ian's real key and access code.
 2. End-to-end test with a real CV: valid JSON; every company 1,000 employees or fewer; achievements only use CV figures and are tagged correctly; vacancies real and current (open a sample of links and report how many are live and relevant); job match only with a spec; email and Copy work; .docx, text PDF, and scanned PDF message. If web search is not enabled on the Anthropic organisation, tell Ian exactly where to turn it on.
