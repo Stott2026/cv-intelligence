@@ -39,6 +39,13 @@ app.use((req, res, next) => {
 // Health check for Railway. Deliberately needs no access code and touches nothing else.
 app.get('/healthz', (req, res) => res.type('text').send('ok'));
 
+// Back to the House: the address of the House's hallway, from HOUSE_URL (the front door to every
+// Stott and May tool). No access code needed: it only says where the button goes. Empty hides it.
+app.get('/house-link', (req, res) => {
+  const base = (process.env.HOUSE_URL || '').trim().replace(/\/+$/, '');
+  res.json({ url: /^https?:\/\//.test(base) ? `${base}/?hallway` : null });
+});
+
 app.use(express.static(path.join(here, 'public'), { extensions: ['html'] }));
 
 // ---- Everything under /api needs the access code ----

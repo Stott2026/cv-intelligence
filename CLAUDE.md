@@ -15,9 +15,9 @@ Ian owns this project. He is not a developer. Explain plans in plain English bef
 - `lib/verify.js`: server-side checks on everything Claude returns (see Rules). Tests in `test/` (`npm test`).
 - `public/`: plain HTML, CSS and JavaScript. Model output is only ever inserted with `textContent`.
 
-Routes: `GET /healthz` (no auth, returns `ok`), `POST /api/check`, `POST /api/analyse` (multipart: `cv`, `jobSpec`, `maxSize`, `location`), `POST /api/vacancies`, `POST /api/email`. Every `/api` route needs the `x-access-code` header to match `ACCESS_CODE`.
+Routes: `GET /healthz` (no auth, returns `ok`), `POST /api/check`, `POST /api/analyse` (multipart: `cv`, `jobSpec`, `maxSize`, `location`), `POST /api/vacancies`, `POST /api/email`. Every `/api` route needs the `x-access-code` header to match `ACCESS_CODE`. `GET /house-link` (no auth) returns the House's hallway address for the "The House" button in the top bar (November 2026).
 
-Settings: `ANTHROPIC_API_KEY`, `ACCESS_CODE`, optional `ANTHROPIC_MODEL` (default `claude-opus-5-5`), `PORT`. Locally they go in `.env` (git-ignored, never commit it); on Railway they are service variables only. `.env.example` lists every name.
+Settings: `ANTHROPIC_API_KEY`, `ACCESS_CODE`, optional `ANTHROPIC_MODEL` (default `claude-opus-5-5`), `PORT`, optional `HOUSE_URL` (the address of the House, `stott2026/the-house`, the front door to every Stott and May tool, where this tool is the Gallery; when set, a "The House" button in the top bar goes to `<HOUSE_URL>/?hallway`; empty hides it). Locally they go in `.env` (git-ignored, never commit it); on Railway they are service variables only. `.env.example` lists every name.
 
 ## Rules (do not break these)
 

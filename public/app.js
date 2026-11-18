@@ -49,6 +49,13 @@
   }
 
   // ---------- theme ----------
+  // Back to the House: the server sends the House's address when HOUSE_URL is set.
+  fetch('/house-link').then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+    if (!d || !d.url) return;
+    $('houseLink').href = d.url;
+    $('houseLink').hidden = false;
+  }).catch(function () {});
+
   $('themeBtn').addEventListener('click', function () {
     var root = document.documentElement;
     var current = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
