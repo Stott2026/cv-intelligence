@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CV Intelligence - Stott and May</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="logo-light-bg.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@300;400;600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script src="theme.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+  <header class="topbar">
+    <img class="logo logo-light" src="logo-light-bg.png" alt="Stott and May" width="374" height="351">
+    <img class="logo logo-dark" src="logo-dark-bg.png" alt="Stott and May" width="447" height="447">
+    <div>
+      <p class="brand-name">CV Intelligence</p>
+      <p class="brand-sub">Stott and May consultant tools</p>
+    </div>
+    <span class="spacer"></span>
+    <a class="ghost house-link" id="houseLink" href="#" hidden aria-label="Back to The House" title="Back to The House">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <span>The House</span>
+    </a>
+    <button class="ghost" id="themeBtn" type="button">Light / dark</button>
+    <button class="ghost" id="signOutBtn" type="button" hidden>Sign out</button>
+  </header>
+
+  <!-- Access code -->
+  <main id="gate" class="gate" hidden>
+    <section class="panel narrow" aria-labelledby="gateTitle">
+      <div class="panel-in">
+        <p class="eyebrow">Stott and May team only</p>
+        <h1 id="gateTitle">Enter the <span>access code</span></h1>
+        <form id="gateForm" class="stack" novalidate>
+          <div>
+            <label for="codeInput">Access code</label>
+            <input id="codeInput" type="password" autocomplete="current-password" required>
+          </div>
+          <p class="error" id="gateError" role="alert" hidden></p>
+          <button class="btn" type="submit">Continue</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- App -->
+  <main id="main" class="layout" hidden>
+    <section class="panel" aria-labelledby="upTitle">
+      <form class="panel-in" id="cvForm" novalidate>
+        <div>
+          <p class="eyebrow">Step 1</p>
+          <h2 id="upTitle">Upload a CV</h2>
+        </div>
+
+        <div class="drop" id="drop">
+          <div class="file-ico" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+          </div>
+          <div class="drop-text">
+            <label for="cvFile" class="file-name" id="fileName">Choose a PDF or Word CV</label>
+            <p class="file-meta" id="fileMeta">or drag it here · up to 10 MB</p>
+          </div>
+          <input id="cvFile" class="file-input" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+        </div>
+
+        <fieldset class="filters">
+          <legend class="eyebrow">Filters</legend>
+          <div>
+            <label for="maxSize">Company size</label>
+            <select id="maxSize">
+              <option value="50">Up to 50 employees</option>
+              <option value="200">Up to 200 employees</option>
+              <option value="500">Up to 500 employees</option>
+              <option value="1000" selected>Up to 1,000 employees</option>
+            </select>
+          </div>
+          <div>
+            <label for="location">Location</label>
+            <input id="location" type="text" placeholder="e.g. Manchester, London or Remote UK" autocomplete="off">
+            <p class="hint">Leave empty to use the location on the CV.</p>
+          </div>
+        </fieldset>
+
+        <div>
+          <label for="spec">Job spec (optional)</label>
+          <textarea id="spec" rows="4" placeholder="Paste a job spec to get a job match"></textarea>
+          <p class="hint">The Job match tab only appears when a spec is pasted.</p>
+        </div>
+
+        <p class="error" id="formError" role="alert" hidden></p>
+        <button class="btn" type="submit" id="runBtn">Analyse CV</button>
+        <p class="hint">The CV is sent to Claude (Anthropic) for analysis and is not stored by this app.</p>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="resTitle" aria-busy="false" id="resultsPanel">
+      <div class="panel-in">
+        <div id="emptyState" class="empty">
+          <p class="eyebrow">Results</p>
+          <h1 id="resTitle">Turn a CV into a <span>pitch</span></h1>
+          <ul class="empty-list">
+            <li>Target companies within your size and location filters</li>
+            <li>Live vacancies found by web search, with real links</li>
+            <li>Selling points and achievements, each marked "From CV" or "Inferred - check"</li>
+            <li>A pitch guide, an optional job match and an intro email</li>
+          </ul>
+        </div>
+
+        <div id="loading" class="loading" hidden role="status">
+          <span class="spinner" aria-hidden="true"></span>
+          <span id="loadingText">Reading the CV…</span>
+        </div>
+
+        <div id="results" hidden>
+          <div class="result-head">
+            <div class="avatar" aria-hidden="true"><div id="initials"></div></div>
+            <div class="minw0">
+              <p class="eyebrow">Candidate summary</p>
+              <h1 id="headline"></h1>
+              <p class="summary" id="summary"></p>
+              <div class="tags" id="skills"></div>
+            </div>
+          </div>
+
+          <div class="tabs" role="tablist" aria-label="Results">
+            <button role="tab" type="button" id="tab-co" aria-controls="panel-co" aria-selected="true">Target companies <span class="count" id="count-co"></span></button>
+            <button role="tab" type="button" id="tab-vac" aria-controls="panel-vac" aria-selected="false" tabindex="-1">Live vacancies <span class="count" id="count-vac"></span></button>
+            <button role="tab" type="button" id="tab-sell" aria-controls="panel-sell" aria-selected="false" tabindex="-1">Selling points</button>
+            <button role="tab" type="button" id="tab-ach" aria-controls="panel-ach" aria-selected="false" tabindex="-1">Achievements</button>
+            <button role="tab" type="button" id="tab-pitch" aria-controls="panel-pitch" aria-selected="false" tabindex="-1">Pitch guide</button>
+            <button role="tab" type="button" id="tab-match" aria-controls="panel-match" aria-selected="false" tabindex="-1" hidden>Job match</button>
+            <button role="tab" type="button" id="tab-email" aria-controls="panel-email" aria-selected="false" tabindex="-1">Intro email</button>
+          </div>
+
+          <div class="tab-body">
+            <div role="tabpanel" id="panel-co" aria-labelledby="tab-co" tabindex="0">
+              <p class="rule" id="coRule"></p>
+              <div class="grid" id="companies"></div>
+            </div>
+
+            <div role="tabpanel" id="panel-vac" aria-labelledby="tab-vac" tabindex="0" hidden>
+              <p class="rule">Found by live web search. Every link shown appeared in the search results; anything else is removed. Always open the link to check the role is still open.</p>
+              <div id="vacancies"></div>
+              <button class="ghost" type="button" id="vacAgain" hidden>Search again</button>
+            </div>
+
+            <div role="tabpanel" id="panel-sell" aria-labelledby="tab-sell" tabindex="0" hidden>
+              <ul class="clean" id="selling"></ul>
+            </div>
+
+            <div role="tabpanel" id="panel-ach" aria-labelledby="tab-ach" tabindex="0" hidden>
+              <p class="rule">Figures come only from the CV. Anything the CV does not state is marked "Inferred - check" and has no number.</p>
+              <ul class="clean" id="achievements"></ul>
+            </div>
+
+            <div role="tabpanel" id="panel-pitch" aria-labelledby="tab-pitch" tabindex="0" hidden>
+              <div id="pitch"></div>
+            </div>
+
+            <div role="tabpanel" id="panel-match" aria-labelledby="tab-match" tabindex="0" hidden>
+              <div id="match"></div>
+            </div>
+
+            <div role="tabpanel" id="panel-email" aria-labelledby="tab-email" tabindex="0" hidden>
+              <form id="emailForm" class="email-form" novalidate>
+                <div><label for="emCompany">Company (optional)</label><input id="emCompany" type="text" list="companyList" autocomplete="off"></div>
+                <div><label for="emName">Hiring manager name (optional)</label><input id="emName" type="text" autocomplete="off"></div>
+                <div><label for="emRole">Role they are hiring for (optional)</label><input id="emRole" type="text" autocomplete="off"></div>
+                <datalist id="companyList"></datalist>
+                <button class="btn" type="submit" id="emailBtn">Write email</button>
+              </form>
+              <p class="error" id="emailError" role="alert" hidden></p>
+              <div id="emailOut" hidden>
+                <pre class="email" id="emailText"></pre>
+                <div class="row-start">
+                  <button class="btn" type="button" id="copyBtn">Copy email</button>
+                  <span class="toast" id="copied" role="status" aria-live="polite"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="usage" id="usage"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

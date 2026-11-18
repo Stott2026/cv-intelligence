@@ -1,0 +1,24 @@
+{
+  "name": "cv-intelligence",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Stott and May CV Intelligence: upload a CV, get target companies, live vacancies, selling points, achievements, a pitch guide, an optional job match and an intro email.",
+  "type": "module",
+  "main": "server.js",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch --env-file-if-exists=.env server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.4",
+    "mammoth": "^1.13.0",
+    "multer": "^2.5.0",
+    "unpdf": "^1.9.1"
+  }
+}
