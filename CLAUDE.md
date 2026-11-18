@@ -15,13 +15,19 @@ Ian owns this project. He is not a developer. Explain plans in plain English bef
 - `lib/verify.js`: server-side checks on everything Claude returns (see Rules). Tests in `test/` (`npm test`).
 - `public/`: plain HTML, CSS and JavaScript. Model output is only ever inserted with `textContent`.
 
-Routes: `GET /healthz` (no auth, returns `ok`), `POST /api/check`, `POST /api/analyse` (multipart: `cv`, `jobSpec`, `maxSize`, `location`), `POST /api/vacancies`, `POST /api/email`. Every `/api` route needs the `x-access-code` header to match `ACCESS_CODE`. `GET /house-link` (no auth) returns the House's hallway address for the "The House" button in the top bar (November 2026).
+- `lib/house.js`: signing in through the House (see Sign-in below).
 
-Settings: `ANTHROPIC_API_KEY`, `ACCESS_CODE`, optional `ANTHROPIC_MODEL` (default `claude-opus-5-5`), `PORT`, optional `HOUSE_URL` (the address of the House, `stott2026/the-house`, the front door to every Stott and May tool, where this tool is the Gallery; when set, a "The House" button in the top bar goes to `<HOUSE_URL>/?hallway`; empty hides it). Locally they go in `.env` (git-ignored, never commit it); on Railway they are service variables only. `.env.example` lists every name.
+Routes: `GET /healthz` (no auth, returns `ok`), `POST /api/check`, `POST /api/analyse` (multipart: `cv`, `jobSpec`, `maxSize`, `location`), `POST /api/vacancies`, `POST /api/email`. Every `/api` route needs a signed-in person (see Sign-in). `GET /session` (no auth) tells the page whether you're signed in and where to sign in; `POST /signout` signs you out of this tool. `GET /house-link` (no auth) returns the House's hallway address for the "The House" button in the top bar (November 2026).
+
+## Sign-in (through the House, November 2026)
+
+Agreed with Ian: people sign in once, at the House (`stott2026/the-house`, an emailed 6-digit code), and this tool trusts it. Going through the Gallery's door arrives with `?house_pass=…`: a pass signed by the House (Ed25519), naming the person and this tool's address, valid 60 seconds and once only. `lib/house.js` checks it with the House's public key (fetched from `<HOUSE_URL>/auth/pass-key`, refetched if the House's key changes), sets this tool's own signed cookie (`cvi_session`, 7 days) and tidies the address. Opening the tool without being signed in redirects to `<HOUSE_URL>/pass?for=<this address>`, which signs you in to the House if needed and sends you back with a pass. "Sign out" signs out of this tool and goes back to the House's hallway. Backup, switched off: `BACKUP_ACCESS_CODE=true` on Railway makes the old shared `ACCESS_CODE` work again (only for if the House is down). Don't change sign-in from another chat without checking with Ian: it's shared with the House and the other tools.
+
+Settings: `ANTHROPIC_API_KEY`, `HOUSE_URL` (needed for sign-in), optional `SESSION_SECRET` (signs this tool's cookie; without it one is made at start-up and people are sent through the House again after a restart), `ACCESS_CODE` with `BACKUP_ACCESS_CODE=true` (the backup only), optional `ANTHROPIC_MODEL` (default `claude-opus-5-5`), `PORT`, and `HOUSE_URL` also shows a "The House" button in the top bar, to `<HOUSE_URL>/?hallway` (this tool is the Gallery there). Locally they go in `.env` (git-ignored, never commit it); on Railway they are service variables only. `.env.example` lists every name.
 
 ## Rules (do not break these)
 
-- **Secrets**: the API key and access code never reach the browser or the repo.
+- **Secrets**: the API key, the access code and the session secret never reach the browser or the repo.
 - **No invented figures, companies or links anywhere.** Enforced in `lib/verify.js`, not just in prompts:
   - A number may only be shown if it appears in the CV text. Achievements tagged "From CV" must have a figure found in the CV; otherwise they become "Inferred - check" with no figure, or are dropped. Emails quoting a number not in the CV are regenerated once, then refused.
   - Companies above the chosen size limit, or without a size estimate, are removed. The limit can never exceed 1,000.
