@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { extractCvText, CvError } from './lib/extract.js';
+import { TEMPLATES, buildPdf, buildDocx, fileBaseName, cleanFields } from './lib/format.js';
 import { acceptPass, currentUser, signOut, houseSignInUrl, houseReady, backupOn } from './lib/house.js';
 import { ask, parseJson, searchedUrls, searchErrors, ClaudeError, MODEL } from './lib/claude.js';
 import { SENIORITY, ANALYSIS_SYSTEM, ANALYSIS_SCHEMA, analysisMessage, VACANCY_SYSTEM, vacancyMessage, EMAIL_SYSTEM, emailMessage } from './lib/prompts.js';
@@ -214,6 +215,29 @@ api.post('/email', async (req, res, next) => {
       console.warn(JSON.stringify({ event: 'email_rejected', reason: 'numbers not in CV', numbers: bad }));
     }
     res.status(502).json({ error: 'Could not write an email using only figures from the CV. Please try again.', usage: usageTotal });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 4. Format the CV as a Stott and May PDF or Word document (no Claude call, nothing stored)
+api.post('/format', async (req, res, next) => {
+  try {
+    const body = req.body || {};
+    const template = TEMPLATES.includes(body.template) ? body.template : null;
+    const format = body.format === 'pdf' || body.format === 'docx' ? body.format : null;
+    const cvText = String(body.cvText || '').slice(0, MAX_CV_CHARS);
+    if (!template || !format) return res.status(400).json({ error: 'Choose a template and a file type.' });
+    if (!cvText.trim()) return res.status(400).json({ error: 'Analyse a CV first.' });
+    const fields = cleanFields(body.fields);
+    const file = format === 'pdf' ? await buildPdf({ cvText, fields, template }) : await buildDocx({ cvText, fields, template });
+    const name = `${fileBaseName(fields, template)}.${format}`;
+    res.set({
+      'Content-Type': format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'Content-Disposition': `attachment; filename="${name.replace(/[^\x20-\x7e]/g, '_').replace(/"/g, '')}"; filename*=UTF-8''${encodeURIComponent(name)}`,
+      'Cache-Control': 'no-store',
+    });
+    res.send(file);
   } catch (err) {
     next(err);
   }

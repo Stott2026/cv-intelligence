@@ -206,6 +206,7 @@
     $('emailOut').hidden = true; showError($('emailError'), '');
     var list = $('companyList'); clear(list);
     a.targetCompanies.forEach(function (co) { list.appendChild(el('option', { value: co.name })); });
+    prefillFormat(a);
     renderUsage();
   }
 
@@ -366,6 +367,83 @@
       navigator.clipboard.writeText(text).then(function () { $('copied').textContent = 'Copied'; }, fallback);
     } else fallback();
   });
+
+  // ---------- format CV ----------
+  // Pre-fill the profile page from the analysis. Achievements only from those checked as "From CV".
+  function prefillFormat(a) {
+    var c = a.candidate;
+    $('fmName').value = c.name || '';
+    $('fmLocation').value = c.location && c.location !== 'Not stated' ? c.location : '';
+    $('fmVacancyTitle').value = $('emRole').value || '';
+    $('fmSummary').value = c.summary || '';
+    $('fmAchievements').value = (a.achievements || []).filter(function (x) { return x.source === 'From CV'; })
+      .slice(0, 5).map(function (x) { return x.statement; }).join('\n');
+    ['fmAvailability', 'fmSalary', 'fmNationality', 'fmCompany', 'fmVacancyName'].forEach(function (id) { $(id).value = ''; });
+    $('formatStatus').textContent = ''; showError($('formatError'), '');
+  }
+  // Your own details for the "Get in touch" page are remembered in this browser for next time.
+  var consultantIds = ['fmConsultantName', 'fmConsultantTitle', 'fmEmail', 'fmPhone', 'fmLinkedin'];
+  consultantIds.forEach(function (id) {
+    try { $(id).value = localStorage.getItem('cvi-' + id) || ''; } catch (e) {}
+    $(id).addEventListener('change', function () { try { localStorage.setItem('cvi-' + id, $(id).value.trim()); } catch (e) {} });
+  });
+
+  function chosenTemplate() { return document.querySelector('input[name="tpl"]:checked').value; }
+  function showTemplateFields() {
+    var t = chosenTemplate();
+    $('profileFields').hidden = t === 'basic';
+    $('packFields').hidden = t !== 'long';
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="tpl"]'), function (r) { r.addEventListener('change', showTemplateFields); });
+  showTemplateFields();
+
+  function fileNameFrom(res, fallback) {
+    var cd = res.headers.get('Content-Disposition') || '';
+    var m = cd.match(/filename\*=UTF-8''([^;]+)/i);
+    try { if (m) return decodeURIComponent(m[1]); } catch (e) {}
+    return fallback;
+  }
+
+  async function downloadFormatted(format) {
+    var buttons = [$('pdfBtn'), $('docxBtn')];
+    showError($('formatError'), '');
+    $('formatStatus').textContent = 'Preparing the ' + (format === 'pdf' ? 'PDF' : 'Word document') + '…';
+    buttons.forEach(function (b) { b.disabled = true; });
+    var v = function (id) { return $(id).value; };
+    try {
+      var res = await fetch('/api/format', {
+        method: 'POST',
+        headers: { 'x-access-code': state.code, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          template: chosenTemplate(), format: format, cvText: state.cvText,
+          fields: {
+            name: v('fmName'), location: v('fmLocation'), vacancyTitle: v('fmVacancyTitle'), availability: v('fmAvailability'),
+            salary: v('fmSalary'), nationality: v('fmNationality'), summary: v('fmSummary'), keyAchievements: v('fmAchievements'),
+            company: v('fmCompany'), vacancyName: v('fmVacancyName'), consultantName: v('fmConsultantName'),
+            consultantTitle: v('fmConsultantTitle'), email: v('fmEmail'), phone: v('fmPhone'), linkedin: v('fmLinkedin'),
+          },
+        }),
+      });
+      if (!res.ok) {
+        var data = {}; try { data = await res.json(); } catch (e) {}
+        if (res.status === 401 && data.signIn && !session.backup) { window.location.assign(data.signIn); return; }
+        throw new Error(data.error || 'Could not create the file. Please try again.');
+      }
+      var blob = await res.blob();
+      var url = URL.createObjectURL(blob);
+      var a = el('a', { href: url, download: fileNameFrom(res, 'Stott and May CV.' + format) });
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+      $('formatStatus').textContent = 'Downloaded';
+    } catch (err) {
+      $('formatStatus').textContent = '';
+      showError($('formatError'), err.message === 'Failed to fetch' ? 'Could not reach the server. Check your connection and try again.' : err.message);
+    } finally {
+      buttons.forEach(function (b) { b.disabled = false; });
+    }
+  }
+  $('pdfBtn').addEventListener('click', function () { downloadFormatted('pdf'); });
+  $('docxBtn').addEventListener('click', function () { downloadFormatted('docx'); });
 
   // ---------- usage ----------
   function renderUsage() {
