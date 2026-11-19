@@ -193,15 +193,20 @@
                   <legend>Template</legend>
                   <label class="tpl"><input type="radio" name="tpl" value="basic"><span><strong>Basic</strong><small>The CV only, with the Stott and May header and footer.</small></span></label>
                   <label class="tpl"><input type="radio" name="tpl" value="medium" checked><span><strong>Medium</strong><small>A Candidate Profile page, then the CV.</small></span></label>
-                  <label class="tpl"><input type="radio" name="tpl" value="long"><span><strong>Full pack</strong><small>Cover page, profile, CV and a "Get in touch" page.</small></span></label>
+                  <label class="tpl"><input type="radio" name="tpl" value="long"><span><strong>Full pack</strong><small>Dark cover, profile, CV and a closing page with your details.</small></span></label>
                 </fieldset>
+
+                <h3 class="subhead">Candidate</h3>
+                <div class="form-grid">
+                  <div><label for="fmName">Candidate name</label><input id="fmName" type="text" autocomplete="off"></div>
+                  <div><label for="fmVacancyTitle">Vacancy job title</label><input id="fmVacancyTitle" type="text" autocomplete="off"></div>
+                </div>
+                <p class="hint">Shown as the headline at the top of the CV.</p>
 
                 <div id="profileFields">
                   <h3 class="subhead">Candidate Profile page</h3>
                   <div class="form-grid">
-                    <div><label for="fmName">Candidate name</label><input id="fmName" type="text" autocomplete="off"></div>
                     <div><label for="fmLocation">Location</label><input id="fmLocation" type="text" autocomplete="off"></div>
-                    <div><label for="fmVacancyTitle">Vacancy job title</label><input id="fmVacancyTitle" type="text" autocomplete="off"></div>
                     <div><label for="fmAvailability">Availability / notice</label><input id="fmAvailability" type="text" autocomplete="off"></div>
                     <div><label for="fmSalary">Salary expectations</label><input id="fmSalary" type="text" autocomplete="off"></div>
                     <div><label for="fmNationality">Nationality</label><input id="fmNationality" type="text" autocomplete="off"></div>
@@ -219,14 +224,16 @@
                     <div><label for="fmCompany">Client company</label><input id="fmCompany" type="text" list="companyList" autocomplete="off"></div>
                     <div><label for="fmVacancyName">Vacancy name</label><input id="fmVacancyName" type="text" autocomplete="off"></div>
                   </div>
-                  <h3 class="subhead">"Get in touch" page (your details)</h3>
-                  <div class="form-grid">
-                    <div><label for="fmConsultantName">Your name</label><input id="fmConsultantName" type="text" autocomplete="name"></div>
-                    <div><label for="fmConsultantTitle">Your job title</label><input id="fmConsultantTitle" type="text" autocomplete="organization-title"></div>
-                    <div><label for="fmEmail">Your email</label><input id="fmEmail" type="text" autocomplete="email"></div>
-                    <div><label for="fmPhone">Your phone</label><input id="fmPhone" type="text" autocomplete="tel"></div>
-                    <div><label for="fmLinkedin">Your LinkedIn</label><input id="fmLinkedin" type="text" autocomplete="off"></div>
-                  </div>
+                </div>
+
+                <h3 class="subhead">Your contact details</h3>
+                <p class="hint contact-hint">The candidate's own email, phone and LinkedIn are always removed from the CV. Your details go in their place, under "Contact via Stott and May", and on the Full pack's last page. Remembered in this browser.</p>
+                <div class="form-grid">
+                  <div><label for="fmConsultantName">Your name</label><input id="fmConsultantName" type="text" autocomplete="name"></div>
+                  <div><label for="fmConsultantTitle">Your job title</label><input id="fmConsultantTitle" type="text" autocomplete="organization-title"></div>
+                  <div><label for="fmEmail">Your email</label><input id="fmEmail" type="text" autocomplete="email"></div>
+                  <div><label for="fmPhone">Your phone</label><input id="fmPhone" type="text" autocomplete="tel"></div>
+                  <div><label for="fmLinkedin">Your LinkedIn</label><input id="fmLinkedin" type="text" autocomplete="off"></div>
                 </div>
 
                 <div class="row-start">
