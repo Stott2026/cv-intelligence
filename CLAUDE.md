@@ -39,7 +39,15 @@ Settings: `ANTHROPIC_API_KEY`, `HOUSE_URL` (needed for sign-in), optional `SESSI
 
 ## Brand
 
-Stott and May brand: Manrope for headings and body, Inter inside cards and data. Gradient teal `#00C8C8` to aquamarine `#73F7BB`. Neutrals `#111314`, `#7A8798`, `#C3CAD2`, `#ECEEF3`, `#FFFFFF`. Official transparent logo files in `public/` (`logo-light-bg.png`, `logo-dark-bg.png`), no white box behind the logo. Light and dark mode, works at phone width. British English, "Stott and May" written in full, spaced hyphens ( - ) instead of em dashes (also enforced by `houseStyle()` on model output).
+Stott and May brand, checked against the stott-and-may-brand skill in November 2026 with the same values as the House (`stott2026/the-house`, `web/src/styles/tokens.css`). All colours are tokens at the top of `public/styles.css`, with a light and a dark set.
+
+- Type: Manrope for headings and page text; Inter only inside cards, data and small labels. Eyebrows are Manrope Light (300), uppercase, letter-spacing 0.12em.
+- Gradient teal `#00C8C8` to aquamarine `#73F7BB`. Neutrals `#111314`, `#7A8798`, `#C3CAD2`, `#ECEEF3`, `#FFFFFF`.
+- Light: page `#ECEEF3`, white cards (20px corners, no border) with the soft shadow `0 6px 24px rgba(17,19,20,.08)`. Small teal text and focus rings use the darker `#007A7A`, never brand teal (it fails contrast on white).
+- Dark: page `#111314`, cards fade from `#1B1E20` to `#050606`, muted text `#7A8798` on the page and cards, a lighter grey (`#A3AEBC`, `--muted-in`) on the grey tiles inside a card where `#7A8798` would fail contrast. The chosen Format CV template gets the brand's aquamarine glow.
+- Headline accent on a phrase only; dark text on gradients, never accent colour.
+- Official transparent logo files in `public/` (`logo-light-bg.png`, `logo-dark-bg.png`, identical to the brand skill's), no white box behind the logo. Light and dark mode, works at phone width.
+- British English, "Stott and May" written in full, spaced hyphens ( - ) instead of em dashes (also enforced by `houseStyle()` on model output).
 
 ## Status and plan (November 2026)
 
