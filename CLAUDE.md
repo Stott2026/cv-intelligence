@@ -39,7 +39,7 @@ Settings: `ANTHROPIC_API_KEY`, `HOUSE_URL` (needed for sign-in), optional `SESSI
 
 ## Brand
 
-Stott and May brand: Manrope for headings and body, Inter inside cards and data. Gradient teal `#00C8C8` to aquamarine `#73F7BB`. Neutrals `#111314`, `#7A8798`, `#C3CAD2`, `#ECEEF3`, `#FFFFFF`. Official transparent logo files in `public/` (`logo-light-bg.png`, `logo-dark-bg.png`), no white box behind the logo. Light and dark mode, works at phone width. British English, "Stott and May" written in full, spaced hyphens ( - ) instead of em dashes (also enforced by `houseStyle()` on model output).
+Stott and May brand: Manrope for headings and body, Inter inside cards and data. Gradient teal `#00C8C8` to aquamarine `#73F7BB`. Neutrals `#111314`, `#7A8798`, `#C3CAD2`, `#ECEEF3`, `#FFFFFF`. Official transparent logo files in `public/` (`logo-light-bg.png`, `logo-dark-bg.png`), no white box behind the logo. Light and dark mode, dark by default (the brand skill's rule for tools consultants work in), works at phone width. Source of truth: the Stott and May brand skill (`assets/brand.css`, `references/layout-patterns.md`, example collateral). Gradient runs teal top-left to aquamarine bottom-right as in the collateral. Eyebrows and headline key phrases in the accent (aquamarine on dark, teal on light). Light cards are white with a soft shadow; dark cards fade from `#1B1E20` to near-black. On light, small supporting text uses `#5C6878` and small links `#007A7A` (deeper shades of the brand slate and teal, for readable contrast). British English, "Stott and May" written in full, spaced hyphens ( - ) instead of em dashes (also enforced by `houseStyle()` on model output).
 
 ## Status and plan (November 2026)
 
