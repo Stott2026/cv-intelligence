@@ -1,46 +1,60 @@
-/* CV Intelligence - Stott and May brand.
-   Manrope for headings and body, Inter inside cards and data.
-   Gradient teal #00C8C8 to aquamarine #73F7BB. Neutrals #111314 #7A8798 #C3CAD2 #ECEEF3 #FFFFFF. */
+/* CV Intelligence - Stott and May brand (from the Stott and May brand skill: assets/brand.css,
+   references/layout-patterns.md and the example collateral).
+   Manrope for headings and body, Inter inside cards, data and labels.
+   Gradient teal #00C8C8 to aquamarine #73F7BB. Neutrals #111314 #7A8798 #C3CAD2 #ECEEF3 #FFFFFF.
+   Dark (#111314 page, dark fading cards) is the default for this tool; light is #ECEEF3 with white cards. */
 :root {
   --ink: #111314; --slate: #7A8798; --line: #C3CAD2; --mist: #ECEEF3; --white: #FFFFFF;
   --teal: #00C8C8; --aqua: #73F7BB;
-  --grad: linear-gradient(90deg, var(--teal), var(--aqua));
+  /* As in the collateral: teal at the top left fading to aquamarine at the bottom right. */
+  --grad: linear-gradient(135deg, var(--teal) 0%, var(--aqua) 100%);
 
-  --page: var(--mist); --fg: var(--ink); --muted: #56606E; --surface: var(--white); --surface-2: #F5F6F9;
-  --border: var(--line); --accent-text: #007A7A;
-  --shadow: 0 1px 2px rgba(17, 19, 20, .05), 0 8px 24px rgba(17, 19, 20, .06);
+  /* Light mode */
+  --page: var(--mist); --fg: var(--ink); --surface: var(--white); --surface-2: #F5F6F9;
+  --panel-bg: var(--white); --panel-edge: transparent; --shadow: 0 6px 24px rgba(17, 19, 20, .08);
+  --border: var(--line); --track: #E6E6E6;
+  /* Supporting text: the brand slate is too faint for small text on white, so a deeper shade of it. */
+  --muted: #5C6878;
+  /* Accent: the teal end on light pages for headline phrases and eyebrows; a deeper teal for small links. */
+  --accent-head: var(--teal); --eyebrow: var(--teal); --accent-text: #007A7A;
   --cv-bg: #DDF8EE; --cv-fg: #0B6B4C; --inf-bg: #FFF1D6; --inf-fg: #7A4E00;
   --err-bg: #FDECEC; --err-fg: #9B1C1C; --mark: #C9F5E6;
 
-  --head: "Manrope", system-ui, sans-serif;
-  --data: "Inter", system-ui, sans-serif;
+  --head: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --data: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light;
 }
+/* Dark mode: brand neutrals exactly; aquamarine for accents. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --page: var(--ink); --fg: #F2F4F7; --muted: #A3AEBC; --surface: #1A1D1F; --surface-2: #22262A;
-    --border: #2E3439; --accent-text: var(--aqua); --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    --page: var(--ink); --fg: var(--white); --surface: #1B1E20; --surface-2: #1D2023;
+    --panel-bg: linear-gradient(135deg, #1B1E20 0%, #050606 100%); --panel-edge: #24282B; --shadow: none;
+    --border: #3A3F44; --track: #2E3236; --muted: var(--slate);
+    --accent-head: var(--aqua); --eyebrow: var(--aqua); --accent-text: var(--aqua);
     --cv-bg: #123B2E; --cv-fg: #8BF5C6; --inf-bg: #3A2D10; --inf-fg: #FFD27A;
     --err-bg: #3A1616; --err-fg: #FFB4B4; --mark: #1D4A3C; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --page: var(--ink); --fg: #F2F4F7; --muted: #A3AEBC; --surface: #1A1D1F; --surface-2: #22262A;
-  --border: #2E3439; --accent-text: var(--aqua); --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+  --page: var(--ink); --fg: var(--white); --surface: #1B1E20; --surface-2: #1D2023;
+  --panel-bg: linear-gradient(135deg, #1B1E20 0%, #050606 100%); --panel-edge: #24282B; --shadow: none;
+  --border: #3A3F44; --track: #2E3236; --muted: var(--slate);
+  --accent-head: var(--aqua); --eyebrow: var(--aqua); --accent-text: var(--aqua);
   --cv-bg: #123B2E; --cv-fg: #8BF5C6; --inf-bg: #3A2D10; --inf-fg: #FFD27A;
   --err-bg: #3A1616; --err-fg: #FFB4B4; --mark: #1D4A3C; color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; }
-body { background: var(--page); color: var(--fg); font: 400 15px/1.5 var(--head); }
+body { background: var(--page); color: var(--fg); font: 400 14px/1.5 var(--head); }
 img { max-width: 100%; }
 [hidden] { display: none !important; }
 p { margin: 0; }
-h1 { font-weight: 800; font-size: clamp(24px, 3.4vw, 34px); line-height: 1.1; margin: 4px 0 0; text-wrap: balance; }
-h1 span { color: var(--accent-text); }
-h2 { font-weight: 700; font-size: 20px; line-height: 1.2; margin: 0; }
-h3 { font-weight: 600; font-size: 15px; margin: 0; }
+/* Brand type scale: H1 Manrope Bold 32px, H2 Bold 24px, H3 SemiBold 18px, leading 1.1 to 1.2. */
+h1 { font-weight: 700; font-size: clamp(26px, 3.4vw, 32px); line-height: 1.1; margin: 4px 0 0; text-wrap: balance; }
+h1 span, h2 span { color: var(--accent-head); }
+h2 { font-weight: 700; font-size: 24px; line-height: 1.1; margin: 0; }
+h3 { font-weight: 600; font-size: 18px; line-height: 1.2; margin: 0; }
 .minw0 { min-width: 0; }
 
 .skip { position: absolute; left: -9999px; }
@@ -74,13 +88,14 @@ h3 { font-weight: 600; font-size: 15px; margin: 0; }
 .gate { padding-block: 40px; display: grid; place-items: center; }
 .narrow { width: 100%; max-width: 420px; }
 
-.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; }
-.panel::before { content: ""; display: block; height: 4px; background: var(--grad); }
+/* Cards: white with a very soft shadow on light; dark cards fade from slightly lighter to near-black. */
+.panel { background: var(--panel-bg); border: 1px solid var(--panel-edge); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; }
 .panel-in { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 .stack { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
 
-.eyebrow { font-weight: 300; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+/* Eyebrow: Manrope Light, uppercase, +0.12em tracking, in the accent. */
+.eyebrow { font: 300 11px/1.2 var(--head); letter-spacing: .12em; text-transform: uppercase; color: var(--eyebrow); }
+label { display: block; font: 600 13px/1.4 var(--data); margin-bottom: 6px; }
 input[type="text"], input[type="password"], select, textarea {
   width: 100%; border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
   font: 400 14px/1.4 var(--data); background: var(--surface); color: var(--fg);
@@ -135,7 +150,7 @@ textarea { resize: vertical; min-height: 96px; }
 .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .row-start { display: flex; gap: 12px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
 .size { font: 600 12px var(--data); font-variant-numeric: tabular-nums; color: var(--accent-text); white-space: nowrap; }
-.bar { height: 6px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.bar { height: 6px; border-radius: 99px; background: var(--track); overflow: hidden; }
 .bar i { display: block; height: 100%; width: var(--w, 0%); background: var(--grad); border-radius: 99px; }
 
 .chip { font: 600 11px var(--data); border-radius: 999px; padding: 2px 9px; white-space: nowrap; flex: none; }
@@ -157,7 +172,7 @@ ul.clean { list-style: none; margin: 0; padding: 0; display: flex; flex-directio
 .subhead { margin: 20px 0 10px; }
 
 .score { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-.ring { width: 96px; height: 96px; border-radius: 50%; background: conic-gradient(var(--teal) 0 var(--p, 0%), var(--border) var(--p, 0%) 100%); display: grid; place-items: center; flex: none; }
+.ring { width: 96px; height: 96px; border-radius: 50%; background: conic-gradient(var(--teal) 0 var(--p, 0%), var(--track) var(--p, 0%) 100%); display: grid; place-items: center; flex: none; }
 .ring div { width: 76px; height: 76px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font: 700 22px var(--data); }
 .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 14px; }
 .card ul { margin: 0; padding-left: 18px; }
@@ -179,7 +194,7 @@ ul.clean { list-style: none; margin: 0; padding: 0; display: flex; flex-directio
 
 /* Format CV tab */
 .tpl-pick { border: 0; padding: 0; margin: 0 0 6px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-.tpl-pick legend { font-weight: 600; font-size: 14px; margin-bottom: 8px; padding: 0; }
+.tpl-pick legend { font: 600 13px var(--data); margin-bottom: 8px; padding: 0; }
 .tpl { display: flex; gap: 10px; align-items: flex-start; border: 1.5px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; background: var(--surface); margin: 0; }
 .tpl:has(input:checked) { border-color: var(--teal); background: var(--surface-2); }
 .tpl input { margin-top: 3px; accent-color: var(--teal); }
