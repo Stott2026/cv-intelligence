@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 import { extractCvText, CvError } from './lib/extract.js';
 import { TEMPLATES, buildPdf, buildDocx, fileBaseName, cleanFields } from './lib/format.js';
+import { termsMatcher, flagTerms, termsReady, radarUrl } from './lib/terms.js';
 import { acceptPass, currentUser, signOut, houseSignInUrl, houseReady, backupOn } from './lib/house.js';
 import { ask, parseJson, searchedUrls, searchErrors, ClaudeError, MODEL } from './lib/claude.js';
 import { SENIORITY, ANALYSIS_SYSTEM, ANALYSIS_SCHEMA, analysisMessage, VACANCY_SYSTEM, vacancyMessage, EMAIL_SYSTEM, emailMessage } from './lib/prompts.js';
@@ -135,12 +136,16 @@ api.post('/analyse', upload.single('cv'), async (req, res, next) => {
         ? { ...raw.jobMatch, score: Math.max(0, Math.min(100, raw.jobMatch.score)) }
         : null,
     });
+    // Flag companies we already have Terms with (Client Radar), current Terms clients first.
+    const match = await termsMatcher();
+    analysis.targetCompanies = flagTerms(analysis.targetCompanies, match, (c) => ({ name: c.name }));
 
     res.json({
       analysis,
       cvText,
       filters: { maxSize, location },
       removed: { companies: raw.targetCompanies.length - analysis.targetCompanies.length },
+      terms: { on: termsReady, checked: Boolean(match), radarUrl },
       usage: { ...result.usage, cost_usd: result.cost, model: result.model },
     });
   } catch (err) {
@@ -177,9 +182,11 @@ api.post('/vacancies', async (req, res, next) => {
     } catch {
       found = [];
     }
-    const vacancies = houseStyle(checkVacancies(Array.isArray(found) ? found : [], seen, nums));
+    const match = await termsMatcher();
+    const vacancies = flagTerms(houseStyle(checkVacancies(Array.isArray(found) ? found : [], seen, nums)), match, (v) => ({ name: v.company, url: v.url }));
     res.json({
       vacancies,
+      terms: { on: termsReady, checked: Boolean(match), radarUrl },
       checked: { returned: Array.isArray(found) ? found.length : 0, kept: vacancies.length, searchResults: seen.size },
       usage: { ...result.usage, cost_usd: result.cost, model: result.model },
     });
