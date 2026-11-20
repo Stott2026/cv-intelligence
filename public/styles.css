@@ -204,3 +204,10 @@ ul.clean { list-style: none; margin: 0; padding: 0; display: flex; flex-directio
 #formatForm textarea { margin-bottom: 12px; }
 #formatForm .subhead { margin: 18px 0 10px; }
 .contact-hint { margin: -4px 0 10px; }
+
+/* "On Terms" badge (from Client Radar): gradient chip with dark text, as the brand puts text on gradients. */
+.terms { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-top: 2px; }
+.terms-chip { font: 700 11px var(--data); color: var(--ink); background: var(--grad); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.terms.ended .terms-chip { background: var(--surface); color: var(--muted-in); border: 1px solid var(--border); }
+.terms-detail { font: 500 12px var(--data); color: var(--muted-in); }
+.terms-link { font: 600 12px var(--data); color: var(--accent-text); }
