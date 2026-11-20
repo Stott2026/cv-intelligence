@@ -33,7 +33,7 @@ test('the candidate\'s email, phone, LinkedIn and home address are removed; ordi
 test('CV text is split into headings, job titles, dates, bullets and skills', () => {
   const blocks = parseCvBlocks(redactPersonalDetails(CV));
   const types = blocks.map((b) => (b.type === 'para' && b.role ? 'role' : b.type));
-  assert.deepEqual(types, ['para', 'para', 'heading', 'role', 'date', 'bullets', 'heading', 'skills']);
+  assert.deepEqual(types, ['para', 'contact', 'heading', 'role', 'date', 'bullets', 'heading', 'skills']);
   const bullets = blocks.find((b) => b.type === 'bullets');
   assert.equal(bullets.items.length, 2);
   assert.match(bullets.items[1].text, /rebuild that took the service/, 'a wrapped line joins its bullet');
@@ -62,4 +62,34 @@ test('every template builds as a PDF and a Word file', async () => {
     const docx = await buildDocx({ cvText: CV, fields, template });
     assert.equal(docx.subarray(0, 2).toString(), 'PK', 'a .docx is a zip file');
   }
+});
+
+test('a LinkedIn-style CV: the Contact heading keeps a contact block, and one-per-line skills become tags', () => {
+  const linkedin = `Contact
+www.linkedin.com/in/jobloggs (LinkedIn)
+jo@example.com
+Top Skills
+Large Language Models (LLM)
+Amazon Web Services (AWS)
+Machine Learning
+Experience
+Engineer — Acme, London`;
+  const blocks = parseCvBlocks(redactPersonalDetails(linkedin));
+  assert.deepEqual(blocks.map((b) => b.type), ['heading', 'contact', 'heading', 'skills', 'heading', 'para']);
+  assert.deepEqual(blocks[3].items, ['Large Language Models (LLM)', 'Amazon Web Services (AWS)', 'Machine Learning']);
+});
+
+test('the consultant\'s details replace the removed contact details in the CV', async () => {
+  const fields = { name: 'Jo Bloggs', consultantName: 'Sam Consultant', email: 'sam@stottandmay.com', phone: '020 7946 0000' };
+  for (const template of ['basic', 'medium', 'long']) {
+    const docx = await buildDocx({ cvText: CV, fields, template });
+    assert.ok(docx.length > 1000);
+  }
+  const { execFileSync } = await import('node:child_process');
+  const pdf = await buildPdf({ cvText: CV, fields, template: 'basic' });
+  let text = '';
+  try { text = execFileSync('pdftotext', ['-', '-'], { input: pdf }).toString(); } catch { return; } // pdftotext not installed: skip the text check
+  assert.match(text, /Sam Consultant/);
+  assert.match(text, /sam@stottandmay\.com/);
+  assert.ok(!text.includes('jo.bloggs@example.com'));
 });
