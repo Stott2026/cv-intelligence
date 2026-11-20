@@ -24,6 +24,25 @@
     var fromCv = source === 'From CV';
     return el('span', { class: 'chip ' + (fromCv ? 'cv' : 'inf'), text: fromCv ? 'From CV' : 'Inferred - check' });
   }
+  // "On Terms" badge for a company Client Radar says we have Terms with, linking to it there.
+  function termsBadge(t) {
+    if (!t) return null;
+    var detail = [t.termsTypes && t.termsTypes.length ? t.termsTypes.join(', ') : '', t.owner ? 'Owner: ' + t.owner : ''].filter(Boolean).join(' · ');
+    var box = el('div', { class: 'terms' + (t.archived ? ' ended' : '') }, [
+      el('span', { class: 'terms-chip', text: t.archived ? 'Terms ended' : 'On Terms' }),
+      detail ? el('span', { class: 'terms-detail', text: detail }) : null,
+    ]);
+    if (/^https?:\/\//.test(t.link || '')) box.appendChild(el('a', { class: 'terms-link', href: t.link, target: '_blank', rel: 'noopener noreferrer', text: 'Open in Client Radar' }));
+    return box;
+  }
+  function termsNote(items) {
+    var on = items.filter(function (x) { return x.terms && !x.terms.archived; }).length;
+    var ended = items.filter(function (x) { return x.terms && x.terms.archived; }).length;
+    var parts = [];
+    if (on) parts.push(on + (on === 1 ? ' is a Stott and May Terms client' : ' are Stott and May Terms clients') + ' (shown first)');
+    if (ended) parts.push(ended + ' had Terms that have ended');
+    return parts.length ? ' ' + parts.join('; ') + '.' : '';
+  }
   function showError(node, message) { node.textContent = message; node.hidden = !message; }
   function store(key, value) { try { value == null ? sessionStorage.removeItem(key) : sessionStorage.setItem(key, value); } catch (e) {} }
   function load(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
@@ -196,6 +215,7 @@
     (c.skills || []).forEach(function (s) { skills.appendChild(el('span', { class: 'tag', text: s })); });
     if (c.location && c.location !== 'Not stated') skills.appendChild(el('span', { class: 'tag', text: c.location }));
 
+    state.terms = data.terms || null;
     renderCompanies(a.targetCompanies, data.filters, data.removed);
     renderSelling(a.sellingPoints);
     renderAchievements(a.achievements);
@@ -214,6 +234,8 @@
     var where = filters.location ? ' and hire in or near ' + filters.location : '';
     var note = 'Only companies with ' + fmt(filters.maxSize) + ' employees or fewer' + where + ' are shown. Sizes are Claude\'s estimates, not looked up - check them on LinkedIn before calling.';
     if (removed && removed.companies > 0) note += ' ' + removed.companies + ' suggestion' + (removed.companies === 1 ? ' was' : 's were') + ' removed for being too large or having no size estimate.';
+    note += termsNote(items);
+    if (state.terms && state.terms.on && !state.terms.checked) note += ' Client Radar could not be reached, so Terms clients are not marked this time.';
     $('coRule').textContent = note;
     $('count-co').textContent = items.length || '';
     var grid = $('companies'); clear(grid);
@@ -227,6 +249,7 @@
         el('p', { class: 'meta', text: [co.sector, co.location].filter(Boolean).join(' · ') }),
         el('p', { text: co.whyFit }),
         el('p', { class: 'meta', text: 'Size is Claude\'s estimate: ' + co.sizeBasis }),
+        termsBadge(co.terms),
       ]));
     });
   }
@@ -319,6 +342,8 @@
       box.appendChild(el('p', { class: 'muted', text: 'No live vacancies matched these filters. Try again, or widen the company size or location.' }));
       return;
     }
+    var tnote = termsNote(data.vacancies);
+    if (tnote) box.appendChild(el('p', { class: 'rule', text: 'Of these vacancies,' + tnote.replace(/ \(shown first\)/, ' (shown first)') }));
     var list = el('div', { class: 'vac-list' });
     data.vacancies.forEach(function (v) {
       var link = el('a', { class: 'vac-link', href: v.url, target: '_blank', rel: 'noopener noreferrer', text: 'Open the posting' });
@@ -326,6 +351,7 @@
         el('h3', { text: v.title }),
         el('p', { class: 'meta', text: [v.company, v.location, v.posted].filter(Boolean).join(' · ') }),
         v.whySuitable ? el('p', { text: v.whySuitable }) : null,
+        termsBadge(v.terms),
         link,
         el('p', { class: 'meta', text: new URL(v.url).hostname.replace(/^www\./, '') }),
       ]));
