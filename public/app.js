@@ -406,6 +406,7 @@
       .slice(0, 5).map(function (x) { return x.statement; }).join('\n');
     ['fmAvailability', 'fmSalary', 'fmNationality', 'fmCompany', 'fmVacancyName'].forEach(function (id) { $(id).value = ''; });
     $('formatStatus').textContent = ''; showError($('formatError'), '');
+    state.anon = null; // a new CV needs a new anonymous version
   }
   // Your own details for the "Get in touch" page are remembered in this browser for next time.
   var consultantIds = ['fmConsultantName', 'fmConsultantTitle', 'fmEmail', 'fmPhone', 'fmLinkedin'];
@@ -416,12 +417,32 @@
 
   function chosenTemplate() { return document.querySelector('input[name="tpl"]:checked').value; }
   function showTemplateFields() {
-    var t = chosenTemplate();
-    $('profileFields').hidden = t === 'basic';
-    $('packFields').hidden = t !== 'long';
+    var t = chosenTemplate(), own = t === 'own', anon = !own && $('fmAnonymous').checked;
+    $('profileFields').hidden = t === 'basic' || own;
+    $('packFields').hidden = t !== 'long' && !own; // the cover sheet
+    $('anonOption').hidden = own;
+    $('ownNote').hidden = !own;
+    $('contactFields').hidden = own; // the candidate's own CV is not changed
+    $('docxBtn').hidden = own; // PDF only
+    $('nameField').hidden = anon;
+    $('nationalityField').hidden = anon; // personal detail, left out of anonymous CVs
   }
   Array.prototype.forEach.call(document.querySelectorAll('input[name="tpl"]'), function (r) { r.addEventListener('change', showTemplateFields); });
+  $('fmAnonymous').addEventListener('change', showTemplateFields);
   showTemplateFields();
+
+  // Anonymous: Claude rewrites the CV, summary and achievements once per CV (checked on the server);
+  // the result is kept in this page only, and reused for PDF and Word.
+  async function anonymousVersion() {
+    var summary = $('fmSummary').value, achievements = $('fmAchievements').value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean).slice(0, 5);
+    var key = [state.cvText, summary, achievements.join('\n'), $('fmName').value].join('\u0000');
+    if (state.anon && state.anon.key === key) return state.anon;
+    $('formatStatus').textContent = 'Making the anonymous version. This takes up to a minute…';
+    var data = await api('anonymise', { json: { cvText: state.cvText, name: $('fmName').value, summary: summary, achievements: achievements } });
+    state.costs.anonymise = data.usage; renderUsage();
+    state.anon = { key: key, cvText: data.cvText, summary: data.summary, achievements: data.achievements };
+    return state.anon;
+  }
 
   function fileNameFrom(res, fallback) {
     var cd = res.headers.get('Content-Disposition') || '';
@@ -436,20 +457,40 @@
     $('formatStatus').textContent = 'Preparing the ' + (format === 'pdf' ? 'PDF' : 'Word document') + '…';
     buttons.forEach(function (b) { b.disabled = true; });
     var v = function (id) { return $(id).value; };
+    var template = chosenTemplate();
     try {
-      var res = await fetch('/api/format', {
-        method: 'POST',
-        headers: { 'x-access-code': state.code, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          template: chosenTemplate(), format: format, cvText: state.cvText,
-          fields: {
-            name: v('fmName'), location: v('fmLocation'), vacancyTitle: v('fmVacancyTitle'), availability: v('fmAvailability'),
-            salary: v('fmSalary'), nationality: v('fmNationality'), summary: v('fmSummary'), keyAchievements: v('fmAchievements'),
-            company: v('fmCompany'), vacancyName: v('fmVacancyName'), consultantName: v('fmConsultantName'),
-            consultantTitle: v('fmConsultantTitle'), email: v('fmEmail'), phone: v('fmPhone'), linkedin: v('fmLinkedin'),
-          },
-        }),
-      });
+      var res;
+      if (template === 'own') {
+        // The uploaded file itself goes back to the server, untouched, to be framed.
+        var file = fileInput.files[0];
+        if (!file) throw new Error('Choose the CV file again (Upload a CV), then download.');
+        if (!/\.pdf$/i.test(file.name)) throw new Error('The candidate\'s own CV option works with PDF CVs. Save the Word CV as a PDF, upload it and try again.');
+        var form = new FormData();
+        form.append('cv', file);
+        form.append('fields', JSON.stringify({ name: v('fmName'), vacancyTitle: v('fmVacancyTitle'), company: v('fmCompany'), vacancyName: v('fmVacancyName') }));
+        res = await fetch('/api/format-own', { method: 'POST', headers: { 'x-access-code': state.code }, body: form });
+      } else {
+        var anonymous = $('fmAnonymous').checked;
+        var text = state.cvText, summary = v('fmSummary'), achievements = v('fmAchievements');
+        if (anonymous) {
+          var anon = await anonymousVersion();
+          text = anon.cvText; summary = anon.summary; achievements = anon.achievements.join('\n');
+          $('formatStatus').textContent = 'Preparing the ' + (format === 'pdf' ? 'PDF' : 'Word document') + '…';
+        }
+        res = await fetch('/api/format', {
+          method: 'POST',
+          headers: { 'x-access-code': state.code, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            template: template, format: format, cvText: text, anonymous: anonymous,
+            fields: {
+              name: anonymous ? '' : v('fmName'), location: v('fmLocation'), vacancyTitle: v('fmVacancyTitle'), availability: v('fmAvailability'),
+              salary: v('fmSalary'), nationality: anonymous ? '' : v('fmNationality'), summary: summary, keyAchievements: achievements,
+              company: v('fmCompany'), vacancyName: v('fmVacancyName'), consultantName: v('fmConsultantName'),
+              consultantTitle: v('fmConsultantTitle'), email: v('fmEmail'), phone: v('fmPhone'), linkedin: v('fmLinkedin'),
+            },
+          }),
+        });
+      }
       if (!res.ok) {
         var data = {}; try { data = await res.json(); } catch (e) {}
         if (res.status === 401 && data.signIn && !session.backup) { window.location.assign(data.signIn); return; }
@@ -474,7 +515,7 @@
   // ---------- usage ----------
   function renderUsage() {
     var parts = [], total = 0, known = true;
-    [['analysis', 'Analysis'], ['vacancies', 'Vacancy search'], ['email', 'Email']].forEach(function (p) {
+    [['analysis', 'Analysis'], ['vacancies', 'Vacancy search'], ['email', 'Email'], ['anonymise', 'Anonymous CV']].forEach(function (p) {
       var u = state.costs[p[0]];
       if (!u) return;
       if (u.cost_usd == null) known = false; else total += u.cost_usd;
