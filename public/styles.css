@@ -211,3 +211,9 @@ ul.clean { list-style: none; margin: 0; padding: 0; display: flex; flex-directio
 .terms.ended .terms-chip { background: var(--surface); color: var(--muted-in); border: 1px solid var(--border); }
 .terms-detail { font: 500 12px var(--data); color: var(--muted-in); }
 .terms-link { font: 600 12px var(--data); color: var(--accent-text); }
+
+/* Format CV: the Anonymous option */
+.anon { margin: 6px 0 4px; padding: 12px 14px; border-radius: 14px; background: var(--surface-2); }
+.check { display: flex; gap: 10px; align-items: flex-start; font: 400 14px/1.45 var(--data); cursor: pointer; margin: 0; }
+.check input { margin-top: 3px; accent-color: var(--teal); width: 16px; height: 16px; flex: none; }
+.anon .hint { margin-left: 26px; }

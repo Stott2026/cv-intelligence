@@ -11,6 +11,9 @@ import { fileURLToPath } from 'node:url';
 import { extractCvText, CvError } from './lib/extract.js';
 import { TEMPLATES, buildPdf, buildDocx, fileBaseName, cleanFields } from './lib/format.js';
 import { termsMatcher, flagTerms, termsReady, radarUrl } from './lib/terms.js';
+import { anonymise } from './lib/anonymise.js';
+import { wrapOwnCv } from './lib/wrap.js';
+import { wordToPdf } from './lib/convert.js';
 import { acceptPass, currentUser, signOut, houseSignInUrl, houseReady, backupOn } from './lib/house.js';
 import { ask, parseJson, searchedUrls, searchErrors, ClaudeError, MODEL } from './lib/claude.js';
 import { SENIORITY, ANALYSIS_SYSTEM, ANALYSIS_SCHEMA, analysisMessage, VACANCY_SYSTEM, vacancyMessage, EMAIL_SYSTEM, emailMessage } from './lib/prompts.js';
@@ -236,15 +239,59 @@ api.post('/format', async (req, res, next) => {
     const cvText = String(body.cvText || '').slice(0, MAX_CV_CHARS);
     if (!template || !format) return res.status(400).json({ error: 'Choose a template and a file type.' });
     if (!cvText.trim()) return res.status(400).json({ error: 'Analyse a CV first.' });
-    const fields = cleanFields(body.fields);
-    const file = format === 'pdf' ? await buildPdf({ cvText, fields, template }) : await buildDocx({ cvText, fields, template });
-    const name = `${fileBaseName(fields, template)}.${format}`;
-    res.set({
-      'Content-Type': format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'Content-Disposition': `attachment; filename="${name.replace(/[^\x20-\x7e]/g, '_').replace(/"/g, '')}"; filename*=UTF-8''${encodeURIComponent(name)}`,
-      'Cache-Control': 'no-store',
+    // Anonymous: the browser sends the text from /api/anonymise; the name is never shown.
+    const anonymous = body.anonymous === true;
+    const fields = cleanFields(body.fields, { anonymous });
+    const file = format === 'pdf' ? await buildPdf({ cvText, fields, template, anonymous }) : await buildDocx({ cvText, fields, template, anonymous });
+    sendFile(res, file, `${fileBaseName(fields, template)}.${format}`, format);
+  } catch (err) {
+    next(err);
+  }
+});
+
+function sendFile(res, file, name, format) {
+  res.set({
+    'Content-Type': format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'Content-Disposition': `attachment; filename="${name.replace(/[^\x20-\x7e]/g, '_').replace(/"/g, '')}"; filename*=UTF-8''${encodeURIComponent(name)}`,
+    'Cache-Control': 'no-store',
+  });
+  res.send(file);
+}
+
+// 5. Anonymise the CV text, summary and achievements (one Claude call, checked in lib/anonymise.js).
+//    The result goes back to the browser for /api/format; nothing is stored.
+api.post('/anonymise', async (req, res, next) => {
+  try {
+    const body = req.body || {};
+    const cvText = String(body.cvText || '').slice(0, MAX_CV_CHARS);
+    if (!cvText.trim()) return res.status(400).json({ error: 'Analyse a CV first.' });
+    const out = await anonymise({
+      cvText,
+      name: String(body.name || '').slice(0, 100),
+      summary: String(body.summary || '').slice(0, 1500),
+      achievements: (Array.isArray(body.achievements) ? body.achievements : []).map((a) => String(a).slice(0, 300)).slice(0, 5),
     });
-    res.send(file);
+    res.json(out);
+  } catch (err) {
+    if (err.usage) console.warn(JSON.stringify({ event: 'anonymise_failed_cost', cost_usd: err.usage.cost_usd }));
+    next(err);
+  }
+});
+
+// 6. The candidate's own CV, untouched, in a Stott and May frame with a cover sheet (PDF only).
+api.post('/format-own', upload.single('cv'), async (req, res, next) => {
+  try {
+    if (!req.file) throw new CvError('Choose the CV to upload first.');
+    const fname = req.file.originalname || '';
+    const isPdf = /\.pdf$/i.test(fname) || req.file.mimetype === 'application/pdf';
+    const isDocx = /\.docx$/i.test(fname);
+    if (!isPdf && !isDocx) throw new CvError('The candidate\'s own CV option works with PDF and Word (.docx) CVs.', 422);
+    let fields = {};
+    try { fields = JSON.parse(String(req.body.fields || '{}')); } catch { fields = {}; }
+    const clean = cleanFields(fields);
+    const pdf = isPdf ? req.file.buffer : await wordToPdf(req.file.buffer);
+    const file = await wrapOwnCv({ pdf, fields: clean });
+    sendFile(res, file, `${fileBaseName(clean, 'own')}.pdf`, 'pdf');
   } catch (err) {
     next(err);
   }

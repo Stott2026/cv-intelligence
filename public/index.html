@@ -194,11 +194,18 @@
                   <label class="tpl"><input type="radio" name="tpl" value="basic"><span><strong>Basic</strong><small>The CV only, with the Stott and May header and footer.</small></span></label>
                   <label class="tpl"><input type="radio" name="tpl" value="medium" checked><span><strong>Medium</strong><small>A Candidate Profile page, then the CV.</small></span></label>
                   <label class="tpl"><input type="radio" name="tpl" value="long"><span><strong>Full pack</strong><small>Dark cover, profile, CV and a closing page with your details.</small></span></label>
+                  <label class="tpl"><input type="radio" name="tpl" value="own"><span><strong>Candidate's own CV</strong><small>Their CV exactly as uploaded, in a Stott and May header and footer, with a cover sheet.</small></span></label>
                 </fieldset>
+
+                <div id="anonOption" class="anon">
+                  <label class="check"><input type="checkbox" id="fmAnonymous"> <span><strong>Anonymous</strong> - remove the candidate's name, contact details and the names of their employers, schools and universities</span></label>
+                  <p class="hint">Claude rewrites the CV and the profile text (about $0.05 to $0.10), describing each organisation instead of naming it, for example "a London fintech start-up". Job titles, dates, skills and figures stay as written, and the result is checked before it's used.</p>
+                </div>
+                <p class="rule" id="ownNote" hidden>The candidate's CV goes in exactly as uploaded: nothing is retyped or removed, so their own contact details stay in. Works with PDF and Word CVs and downloads as a PDF (a Word CV is turned into a PDF first, so check the layout).</p>
 
                 <h3 class="subhead">Candidate</h3>
                 <div class="form-grid">
-                  <div><label for="fmName">Candidate name</label><input id="fmName" type="text" autocomplete="off"></div>
+                  <div id="nameField"><label for="fmName">Candidate name</label><input id="fmName" type="text" autocomplete="off"></div>
                   <div><label for="fmVacancyTitle">Vacancy job title</label><input id="fmVacancyTitle" type="text" autocomplete="off"></div>
                 </div>
                 <p class="hint">Shown as the headline at the top of the CV.</p>
@@ -209,7 +216,7 @@
                     <div><label for="fmLocation">Location</label><input id="fmLocation" type="text" autocomplete="off"></div>
                     <div><label for="fmAvailability">Availability / notice</label><input id="fmAvailability" type="text" autocomplete="off"></div>
                     <div><label for="fmSalary">Salary expectations</label><input id="fmSalary" type="text" autocomplete="off"></div>
-                    <div><label for="fmNationality">Nationality</label><input id="fmNationality" type="text" autocomplete="off"></div>
+                    <div id="nationalityField"><label for="fmNationality">Nationality</label><input id="fmNationality" type="text" autocomplete="off"></div>
                   </div>
                   <label for="fmSummary">Candidate summary</label>
                   <textarea id="fmSummary" rows="4"></textarea>
@@ -226,6 +233,7 @@
                   </div>
                 </div>
 
+                <div id="contactFields">
                 <h3 class="subhead">Your contact details</h3>
                 <p class="hint contact-hint">The candidate's own email, phone and LinkedIn are always removed from the CV. Your details go in their place, under "Contact via Stott and May", and on the Full pack's last page. Remembered in this browser.</p>
                 <div class="form-grid">
@@ -234,6 +242,7 @@
                   <div><label for="fmEmail">Your email</label><input id="fmEmail" type="text" autocomplete="email"></div>
                   <div><label for="fmPhone">Your phone</label><input id="fmPhone" type="text" autocomplete="tel"></div>
                   <div><label for="fmLinkedin">Your LinkedIn</label><input id="fmLinkedin" type="text" autocomplete="off"></div>
+                </div>
                 </div>
 
                 <div class="row-start">
