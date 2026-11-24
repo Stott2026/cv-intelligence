@@ -423,7 +423,7 @@
     $('anonOption').hidden = own;
     $('ownNote').hidden = !own;
     $('contactFields').hidden = own; // the candidate's own CV is not changed
-    $('docxBtn').hidden = own; // PDF only
+    $('docxBtn').hidden = own; // always downloads as a PDF
     $('nameField').hidden = anon;
     $('nationalityField').hidden = anon; // personal detail, left out of anonymous CVs
   }
@@ -464,7 +464,7 @@
         // The uploaded file itself goes back to the server, untouched, to be framed.
         var file = fileInput.files[0];
         if (!file) throw new Error('Choose the CV file again (Upload a CV), then download.');
-        if (!/\.pdf$/i.test(file.name)) throw new Error('The candidate\'s own CV option works with PDF CVs. Save the Word CV as a PDF, upload it and try again.');
+        if (!/\.(pdf|docx)$/i.test(file.name)) throw new Error('The candidate\'s own CV option works with PDF and Word (.docx) CVs.');
         var form = new FormData();
         form.append('cv', file);
         form.append('fields', JSON.stringify({ name: v('fmName'), vacancyTitle: v('fmVacancyTitle'), company: v('fmCompany'), vacancyName: v('fmVacancyName') }));

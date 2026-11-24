@@ -63,3 +63,21 @@ test('the candidate\'s own CV: a cover sheet, then each original page framed', a
 test('a file that is not a readable PDF gets a clear message', async () => {
   await assert.rejects(wrapOwnCv({ pdf: Buffer.from('not a pdf'), fields: {} }), /could not be opened/);
 });
+
+test('a Word CV is turned into a PDF for the candidate\'s own CV, if LibreOffice is installed', async (t) => {
+  const { execFileSync } = await import('node:child_process');
+  try { execFileSync('soffice', ['--version'], { stdio: 'ignore' }); } catch { return t.skip('LibreOffice not installed here'); }
+  const { Document, Packer, Paragraph } = await import('docx');
+  const { wordToPdf } = await import('../lib/convert.js');
+  const docx = await Packer.toBuffer(new Document({ sections: [{ children: [new Paragraph('Jo Bloggs - Engineer')] }] }));
+  const pdf = await wordToPdf(docx);
+  const out = await wrapOwnCv({ pdf, fields: { name: 'Jo Bloggs' } });
+  assert.equal((await LibDoc.load(out)).getPageCount(), 2, 'cover + 1 framed page');
+});
+
+test('a broken Word file gets a clear message', async (t) => {
+  const { execFileSync } = await import('node:child_process');
+  try { execFileSync('soffice', ['--version'], { stdio: 'ignore' }); } catch { return t.skip('LibreOffice not installed here'); }
+  const { wordToPdf } = await import('../lib/convert.js');
+  await assert.rejects(wordToPdf(Buffer.from('not a word file')), /could not be turned into a PDF/);
+});

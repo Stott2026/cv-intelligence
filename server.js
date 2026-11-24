@@ -13,6 +13,7 @@ import { TEMPLATES, buildPdf, buildDocx, fileBaseName, cleanFields } from './lib
 import { termsMatcher, flagTerms, termsReady, radarUrl } from './lib/terms.js';
 import { anonymise } from './lib/anonymise.js';
 import { wrapOwnCv } from './lib/wrap.js';
+import { wordToPdf } from './lib/convert.js';
 import { acceptPass, currentUser, signOut, houseSignInUrl, houseReady, backupOn } from './lib/house.js';
 import { ask, parseJson, searchedUrls, searchErrors, ClaudeError, MODEL } from './lib/claude.js';
 import { SENIORITY, ANALYSIS_SYSTEM, ANALYSIS_SCHEMA, analysisMessage, VACANCY_SYSTEM, vacancyMessage, EMAIL_SYSTEM, emailMessage } from './lib/prompts.js';
@@ -281,12 +282,15 @@ api.post('/anonymise', async (req, res, next) => {
 api.post('/format-own', upload.single('cv'), async (req, res, next) => {
   try {
     if (!req.file) throw new CvError('Choose the CV to upload first.');
-    const isPdf = /\.pdf$/i.test(req.file.originalname || '') || req.file.mimetype === 'application/pdf';
-    if (!isPdf) throw new CvError('The candidate\'s own CV option works with PDF CVs. Save the Word CV as a PDF and upload that.', 422);
+    const fname = req.file.originalname || '';
+    const isPdf = /\.pdf$/i.test(fname) || req.file.mimetype === 'application/pdf';
+    const isDocx = /\.docx$/i.test(fname);
+    if (!isPdf && !isDocx) throw new CvError('The candidate\'s own CV option works with PDF and Word (.docx) CVs.', 422);
     let fields = {};
     try { fields = JSON.parse(String(req.body.fields || '{}')); } catch { fields = {}; }
     const clean = cleanFields(fields);
-    const file = await wrapOwnCv({ pdf: req.file.buffer, fields: clean });
+    const pdf = isPdf ? req.file.buffer : await wordToPdf(req.file.buffer);
+    const file = await wrapOwnCv({ pdf, fields: clean });
     sendFile(res, file, `${fileBaseName(clean, 'own')}.pdf`, 'pdf');
   } catch (err) {
     next(err);
