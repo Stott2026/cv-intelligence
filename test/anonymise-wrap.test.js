@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import PDFDocument from 'pdfkit';
 import { PDFDocument as LibDoc } from 'pdf-lib';
-import { leftovers, checkAnonymised } from '../lib/anonymise.js';
+import { leftovers, checkAnonymised, scrubLeftovers } from '../lib/anonymise.js';
 import { wrapOwnCv } from '../lib/wrap.js';
 import { cleanFields, fileBaseName, ANONYMOUS_NAME } from '../lib/format.js';
 
@@ -34,6 +34,19 @@ test('an anonymised version passes only with no names left and no new numbers', 
 
   const newFigure = { ...good, achievements: ['Cut costs by 35%'] };
   assert.deepEqual(checkAnonymised(original, newFigure, 'Jo Bloggs').newNumbers, ['35']);
+});
+
+test('names Claude left in (an employer that is also a skill) are swapped for its own descriptions, then re-checked', () => {
+  const almost = {
+    cvText: 'Engineer - a UK manufacturing firm, 2020 - Present\nSkills: Acme Ltd tooling, Python\nJo Bloggs led the team.',
+    summary: 'The candidate is an engineer.', achievements: ['Cut costs by 32%'],
+    removed: { names: ['Jo Bloggs'], organisations: [{ original: 'Acme Ltd', replacement: 'a UK manufacturing firm' }, { original: 'Acme', replacement: 'the firm' }] },
+  };
+  assert.equal(checkAnonymised(original, almost, 'Jo Bloggs').ok, false);
+  const fixed = scrubLeftovers(almost, 'Jo Bloggs');
+  assert.match(fixed.cvText, /Skills: a UK manufacturing firm tooling, Python/);
+  assert.match(fixed.cvText, /the candidate led the team/);
+  assert.equal(checkAnonymised(original, fixed, 'Jo Bloggs').ok, true);
 });
 
 test('anonymous fields never carry the candidate\'s name, including the file name', () => {
