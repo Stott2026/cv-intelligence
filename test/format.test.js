@@ -93,3 +93,12 @@ test('the consultant\'s details replace the removed contact details in the CV', 
   assert.match(text, /sam@stottandmay\.com/);
   assert.ok(!text.includes('jo.bloggs@example.com'));
 });
+
+test('page furniture from a CV that was already formatted is dropped, and wrapped words are not headings', async () => {
+  const { parseCvBlocks } = await import('../lib/format.js');
+  const blocks = parseCvBlocks('C A N D I D AT E R E S U M E\nExperience\nAnalyst - a bank, London\n- Facilitator for Design Thinking\ntraining.\nS T O T T A N D M AY - 0 1\ntraining\n- Course one');
+  const text = JSON.stringify(blocks);
+  assert.ok(!/C A N D|S T O T T/.test(text), 'letter-spaced furniture removed');
+  assert.deepEqual(blocks.filter((b) => b.type === 'heading').map((b) => b.text), ['Experience', 'Training']);
+  assert.match(text, /Design Thinking training/);
+});
